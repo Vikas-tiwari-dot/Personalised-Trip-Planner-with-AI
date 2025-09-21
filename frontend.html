@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TOURISEM APP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <style>
+    /* Hero water animation */
+    @keyframes waterMove {
+      from { background-position: 0 0; }
+      to { background-position: 1000px 1000px; }
+    }
+    .animated-water { background-size: cover; animation: waterMove 90s linear infinite; }
+
+    /* Header fixed top */
+    header { position: sticky; top: 0; z-index: 50; }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- Header -->
+  <header class="bg-white shadow-md">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-blue-700">TOURISEM APP</h1>
+      <nav class="space-x-6 text-lg">
+        <a href="#" class="hover:text-blue-600">Home</a>
+        <a href="#destinations" class="hover:text-blue-600">Destinations</a>
+        <a href="#about" class="hover:text-blue-600">About</a>
+        <a href="#contact" class="hover:text-blue-600">Contact</a>
+        <button onclick="openModal('loginModal')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Login / Signup</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <!-- <section class="relative bg-cover bg-center h-[80vh] animated-water" style="background: url('travel.mp4');">
+    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div class="text-center text-white px-6">
+        <h2 class="text-4xl md:text-6xl font-bold">Discover the World with Us</h2>
+        <p class="mt-4 text-lg md:text-2xl">Mountains, Rivers, Culture & Adventure</p>
+        <button onclick="openModal('signupModal')" class="mt-6 inline-block bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold text-white">Get Started</button>
+      </div>
+    </div>
+  </section> -->
+   
+   <!-- Hero Section with Video Background -->
+<section class="relative h-[80vh] overflow-hidden">
+    <!-- Video Background -->
+    <video autoplay muted loop playsinline class="absolute top-0 left-0 w-full h-full object-cover">
+      <source src="travel.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  
+    <!-- Overlay -->
+    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div class="text-center text-white px-6">
+        <h2 class="text-4xl md:text-6xl font-bold">Discover the World with Us</h2>
+        <p class="mt-4 text-lg md:text-2xl">Mountains, Rivers, Culture & Adventure</p>
+        <button onclick="openModal('signupModal')" class="mt-6 inline-block bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold text-white">Get Started</button>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Features & Testimonial Section -->
+  <section class="py-16 bg-white text-gray-800">
+    <div class="max-w-6xl mx-auto px-6">
+      <h2 class="text-3xl font-bold text-center mb-10">Why Choose TOURISEM APP?</h2>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-gray-100 p-6 rounded-xl shadow hover:shadow-lg transition">
+          <h3 class="font-semibold text-xl mb-2">Smart Travel Alerts</h3>
+          <p>Get notifications when you move away from your hotel. Discover nearby attractions automatically.</p>
+        </div>
+        <div class="bg-gray-100 p-6 rounded-xl shadow hover:shadow-lg transition">
+          <h3 class="font-semibold text-xl mb-2">Local Guides</h3>
+          <p>Hire trusted local experts through the app, with secure payments built-in.</p>
+        </div>
+        <div class="bg-gray-100 p-6 rounded-xl shadow hover:shadow-lg transition">
+          <h3 class="font-semibold text-xl mb-2">Traveler Community</h3>
+          <p>Chat with other travelers, share your experiences, and view photos from past visitors.</p>
+        </div>
+      </div>
+
+      <!-- Testimonial Carousel -->
+      <div x-data="testimonialCarousel()" x-init="setInterval(next,5000)" class="max-w-3xl mx-auto text-center relative mt-16 h-64">
+        <template x-for="(item,index) in testimonials" :key="index">
+          <div x-show="current === index" x-transition.opacity.duration.1000ms class="p-20 bg-blue-50 rounded-xl shadow-lg absolute inset-0">
+            <p class="text-lg italic mb-4" x-text="item.text"></p>
+            <p class="text-gray-700 font-semibold" x-text="item.name"></p>
+          </div>
+        </template>
+        <div class="flex justify-center mt-12 space-x-4 relative z-10">
+            <button @click="prev()" class="bg-blue-600 text-white px-20 py-2 rounded-lg hover:bg-blue-700">Prev</button>
+            <button @click="next()" class="bg-blue-600 text-white px-20 py-2 rounded-lg hover:bg-blue-700">Next</button>
+          </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Popular Destinations -->
+  <section class="py-16 bg-gray-50" id="destinations">
+    <div class="max-w-6xl mx-auto px-6">
+      <h2 class="text-3xl font-bold text-center mb-10">Popular Destinations</h2>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?crop=entropy&cs=tinysrgb&w=800" alt="Goa" class="w-full h-56 object-cover">
+          <div class="p-4">
+            <h3 class="text-xl font-semibold">Goa Beaches</h3>
+            <p class="text-gray-600">Relax on golden sands and enjoy water sports.</p>
+          </div>
+        </div>
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <img src="image.png" alt="Himalayas" class="w-full h-56 object-cover">
+          <div class="p-4">
+            <h3 class="text-xl font-semibold">Spiritual</h3>
+            <p class="text-gray-600">Discover spiritual vibes and sacred temples.</p>
+          </div>
+        </div>
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <img src="image copy.png" alt="Varanasi" class="w-full h-56 object-cover">
+          <div class="p-4">
+            <h3 class="text-xl font-semibold">Waterfalls</h3>
+            <p class="text-gray-600">Natures lovers</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="moreDestinations" class="grid md:grid-cols-3 gap-8 mt-8 hidden">
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <img src="img.jpeg" alt="Desert" class="w-full h-56 object-cover">
+          <div class="p-4">
+            <h3 class="text-xl font-semibold">Rajasthan Desert</h3>
+            <p class="text-gray-600">Camel rides and desert safaris under starlit skies.</p>
+          </div>
+        </div>
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <img src="https://images.unsplash.com/photo-1548013146-72479768bada?crop=entropy&cs=tinysrgb&w=800" alt="Kerala" class="w-full h-56 object-cover">
+          <div class="p-4">
+            <h3 class="text-xl font-semibold">Taj Mahal</h3>
+            <p class="text-gray-600">Explore the symbol of love and Mughal architecture.</p>
+          </div>
+        </div>
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <img src="https://images.unsplash.com/photo-1589308078059-be1415eab4c3?crop=entropy&cs=tinysrgb&w=800" alt="Taj Mahal" class="w-full h-56 object-cover">
+          <div class="p-4">
+            <h3 class="text-xl font-semibold">Himalayan Mountains</h3>
+            <p class="text-gray-600">Experience breathtaking treks and snowy peaks.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center mt-6">
+        <button id="moreBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold">More</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    document.getElementById("moreBtn").addEventListener("click", function() {
+      const moreSection = document.getElementById("moreDestinations");
+      if(moreSection.classList.contains("hidden")) {
+        moreSection.classList.remove("hidden");
+        this.textContent = "Show Less";
+      } else {
+        moreSection.classList.add("hidden");
+        this.textContent = "More";
+      }
+    });
+
+    function openModal(id) { document.getElementById(id).classList.remove("hidden"); document.getElementById(id).classList.add("flex"); }
+    function closeModal(id) { document.getElementById(id).classList.add("hidden"); document.getElementById(id).classList.remove("flex"); }
+    function switchModal(closeId, openId) { closeModal(closeId); openModal(openId); }
+
+    function testimonialCarousel() {
+      return {
+        current: 0,
+        testimonials: [
+          { text: 'Amazing app! Found hidden temples and met a great local guide.', name: '- Priya Sharma' },
+          { text: 'Bike trip planner saved me so much time. Highly recommended!', name: '- Rohit Verma' },
+          { text: 'Loved seeing community photos before visiting new places.', name: '-Sneha Patel' },
+          { text: 'Great recommendations for food and local experiences!', name: '- Ananya Singh' }
+        ],
+        next() { this.current = (this.current + 1) % this.testimonials.length },
+        prev() { this.current = (this.current - 1 + this.testimonials.length) % this.testimonials.length }
+      }
+    }
+  </script>
+
+  <!-- About Section -->
+  <section id="about" class="bg-blue-50 py-16">
+    <div class="max-w-5xl mx-auto px-6 text-center">
+      <h3 class="text-3xl font-bold mb-4">About TOURISEM APP</h3>
+      <p class="text-gray-700 text-lg">We bring you curated travel experiences, adventure activities, cultural trips, and scenic locations. From majestic mountains to serene rivers, we help you explore the beauty of India and beyond.</p>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contact" class="bg-white py-16 text-center">
+    <div class="max-w-3xl mx-auto px-6">
+      <h3 class="text-3xl font-bold mb-6">Get in Touch</h3>
+      <p class="text-gray-700 mb-6">Plan your dream trip with us today!</p>
+      <a href="mailto:info@tourisemapp.com" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold text-white">Contact Us</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white py-6 text-center">
+    <p>&copy; 2025 TOURISEM APP. All Rights Reserved.</p>
+    <div class="mt-3 flex justify-center space-x-6">
+      <a href="https://instagram.com/hey_vt73" target="_blank" class="hover:text-pink-500">Instagram</a>
+      <a href="https://facebook.com/vikas.tiwari" target="_blank" class="hover:text-blue-400">Facebook</a>
+    </div>
+  </footer>
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+    <div class="bg-white rounded-xl w-96 p-6">
+      <h3 class="text-2xl font-bold mb-4 text-center">Login</h3>
+      <input type="email" placeholder="Email" class="w-full mb-3 p-2 border rounded-lg">
+      <input type="password" placeholder="Password" class="w-full mb-3 p-2 border rounded-lg">
+      <button class="bg-blue-600 hover:bg-blue-700 w-full py-2 text-white rounded-lg">Login</button>
+      <p class="text-sm mt-4 text-center">Don’t have an account? <span onclick="switchModal('loginModal','signupModal')" class="text-blue-600 cursor-pointer">Sign up</span></p>
+      <button onclick="closeModal('loginModal')" class="mt-4 w-full py-2 border rounded-lg">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Signup Modal -->
+  <div id="signupModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+    <div class="bg-white rounded-xl w-96 p-6">
+      <h3 class="text-2xl font-bold mb-4 text-center">Sign Up</h3>
+      <input type="text" placeholder="Full Name" class="w-full mb-3 p-2 border rounded-lg">
+      <input type="email" placeholder="Email" class="w-full mb-3 p-2 border rounded-lg">
+      <input type="password" placeholder="Password" class="w-full mb-3 p-2 border rounded-lg">
+      <button class="bg-blue-600 hover:bg-blue-700 w-full py-2 text-white rounded-lg">Create Account</button>
+      <p class="text-sm mt-4 text-center">Already have an account? <span onclick="switchModal('signupModal','loginModal')" class="text-blue-600 cursor-pointer">Login</span></p>
+      <button onclick="closeModal('signupModal')" class="mt-4 w-full py-2 border rounded-lg">Cancel</button>
+    </div>
+  </div>
+
+</body>
+</html>
