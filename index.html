@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Map Chat</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    body { margin:0; padding:0; font-family: Arial, sans-serif; }
+    #map { height: 100vh; }
+    #chatBox {
+      position: absolute; top: 10px; right: 10px;
+      width: 300px; height: 400px;
+      background: white; border: 1px solid #999;
+      display: none; flex-direction: column;
+      z-index: 1000;
+      border-radius: 8px;
+    }
+    #chatHeader {
+      padding: 10px;
+      background: #eee;
+      border-bottom: 1px solid #ccc;
+      font-weight: bold;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+    #messages { flex:1; overflow-y: auto; padding: 5px; }
+    #chatInput { display: flex; border-top: 1px solid #ccc; }
+    #chatInput input { flex: 1; padding: 10px; border: none; outline: none; }
+    #chatInput button { padding: 10px; border: none; background: #007bff; color: white; cursor: pointer; }
+    .my-message { text-align: right; color: #007bff; margin:4px 0; }
+    .other-message { text-align: left; color: #222; margin:4px 0; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div id="chatBox">
+    <div id="chatHeader"></div>
+    <div id="messages"></div>
+    <div id="chatInput">
+      <input id="msgText" type="text" placeholder="Type a message...">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    // IMPORTANT: this page should be served by the Flask server (so same-origin).
+    // When served by Flask, location.origin will be the API base and avoid CORS headaches.
+    const API_BASE = location.origin;
+
+    let token = localStorage.getItem('userToken') || null;
+    let myUserId = null;
+    let currentChatUser = null;
+    let users = {};   // id -> {id, username, lat, lon}
+    let markers = {};
+    let socket = null;
+
+    const map = L.map('map').setView([20, 78], 4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data ©️ OpenStreetMap contributors'
+    }).addTo(map);
+
+    function addOrUpdateUser(user) {
+      const id = Number(user.id || user.user_id);
+      if (!id) return;
+
+      // If lat/lon aren't present, remove marker (stale)
+      if (user.lat == null || user.lon == null) {
+        if (markers[id]) {
+          map.removeLayer(markers[id]);
+          delete markers[id];
+        }
+        if (users[id]) {
+          users[id].lat = null;
+          users[id].lon = null;
+        }
+        return;
+      }
+
+      users[id] = { id, username: user.username, lat: Number(user.lat), lon: Number(user.lon) };
+
+      const userIcon = L.icon({
+        iconUrl: (id === myUserId) ? 'https://cdn-icons-png.flaticon.com/512/149/149071.png' : 'https://cdn-icons-png.flaticon.com/512/168/168875.png',
+        iconSize: [30, 30]
+      });
+
+      if (markers[id]) {
+        markers[id].setLatLng([users[id].lat, users[id].lon]);
+        markers[id].setIcon(userIcon);
+      } else {
+        const marker = L.marker([users[id].lat, users[id].lon], { icon: userIcon }).addTo(map);
+        marker.bindPopup(users[id].username);
+        marker.on('click', () => openChat(users[id]));
+        markers[id] = marker;
+      }
+    }
+
+    function removeUserById(id) {
+      id = Number(id);
+      if (markers[id]) {
+        map.removeLayer(markers[id]);
+        delete markers[id];
+      }
+      delete users[id];
+    }
+
+    function connectSocket() {
+      socket = io(API_BASE, { query: { token }, transports: ['websocket','polling'] });
+
+      socket.on('connect', () => {
+        console.log('socket connected', socket.id);
+      });
+
+      socket.on("initial_users", (list) => {
+        // Clear existing markers to prevent duplicates
+        Object.values(markers).forEach(marker => map.removeLayer(marker));
+        markers = {};
+        users = {};
+        list.forEach(addOrUpdateUser);
+      });
+
+      socket.on("user_connected", (user) => {
+        addOrUpdateUser(user);
+      });
+
+      socket.on("location_update", (data) => {
+        addOrUpdateUser(data);
+      });
+
+      socket.on("user_disconnected", (data) => {
+        const id = Number(data.id || data.user_id);
+        removeUserById(id);
+      });
+
+      socket.on("new_message", (msg) => {
+        // msg: { id, from, to, content, timestamp }
+        const to = Number(msg.to);
+        const from = Number(msg.from);
+        if (to !== myUserId && from !== myUserId) {
+          // not for this client
+          return;
+        }
+        // ensure sender is in cache; if not, try to fetch a user list quickly
+        if (!users[from]) {
+          fetch(API_BASE + '/users')
+            .then(r => r.json())
+            .then(list => {
+              list.forEach(u => users[u.id] = u);
+              handleIncoming(msg);
+            }).catch(() => handleIncoming(msg)); // still handle even without username
+        } else {
+          handleIncoming(msg);
+        }
+      });
+
+      socket.on("message_sent", (payload) => {
+        // optional: server confirmation for sent messages
+        // console.log('message_sent', payload);
+      });
+
+      socket.on("connect_error", (err) => {
+        console.warn('socket connect error', err);
+      });
+    }
+
+    function handleIncoming(msg) {
+      const from = Number(msg.from);
+      const content = msg.content;
+      const sender = users[from] || { id: from, username: 'User'+from };
+
+      // auto-open chat when a message arrives from someone else
+      if (!currentChatUser || currentChatUser.id !== from) {
+        openChat(sender);
+      }
+      appendMessage(content, 'other-message');
+    }
+
+    function openChat(user) {
+      currentChatUser = user;
+      document.getElementById("chatBox").style.display = "flex";
+      document.getElementById("chatHeader").textContent = `Chat with ${user.username}`;
+      document.getElementById("messages").innerHTML = "";
+
+      // load history
+      fetch(`${API_BASE}/messages/${user.id}`, {
+        headers: { "Authorization": "Bearer " + token }
+      }).then(r => {
+        if (!r.ok) throw new Error('no history');
+        return r.json();
+      }).then(msgs => {
+        msgs.forEach(m => {
+          const cls = (Number(m.from) === myUserId) ? 'my-message' : 'other-message';
+          appendMessage(m.content, cls);
+        });
+      }).catch(e => {
+        // no history or error - ignore silently
+        // console.log('no history', e);
+      });
+    }
+
+    function appendMessage(text, className) {
+      let div = document.createElement("div");
+      div.textContent = text;
+      div.className = className;
+      document.getElementById("messages").appendChild(div);
+      document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+    }
+
+    function sendMessage() {
+      const textEl = document.getElementById("msgText");
+      const text = textEl.value.trim();
+      if (!text || !currentChatUser) return;
+      if (!socket || !socket.connected) {
+        console.warn('socket not connected');
+        return;
+      }
+      socket.emit("private_message", { to: currentChatUser.id, content: text });
+      appendMessage(text, 'my-message');
+      textEl.value = "";
+    }
+
+    function startLocationUpdates() {
+      // send initial pos immediately, then every 5s
+      function sendPos(position) {
+        fetch(API_BASE + "/update_location", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({
+            lat: position.coords.latitude,
+            lon: position.coords.longitude
+          })
+        }).catch(e => console.warn('loc update failed', e));
+      }
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(sendPos, err => console.warn(err));
+        setInterval(() => {
+          navigator.geolocation.getCurrentPosition(sendPos, err => console.warn(err));
+        }, 5000);
+      } else {
+        console.warn('geolocation not available');
+      }
+    }
+
+    // Authenticate / register
+    async function registerOrLogin() {
+      let storedToken = localStorage.getItem('userToken');
+      if (storedToken) {
+        // try /me
+        try {
+          const res = await fetch(API_BASE + "/me", {
+            headers: { "Authorization": "Bearer " + storedToken }
+          });
+          if (res.ok) {
+            const me = await res.json();
+            token = storedToken;
+            myUserId = me.id;
+            console.log("Re-authenticated as", me.username);
+            connectSocket();
+            startLocationUpdates();
+            return;
+          }
+        } catch (e) {
+          console.warn('re-auth failed', e);
+        }
+      }
+
+      // register new random name (change if you want a UI)
+      const name = "User" + Math.floor(Math.random() * 100000);
+      try {
+        let res = await fetch(API_BASE + "/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: name })
+        });
+        let data = await res.json();
+        if (data && data.token) {
+          token = data.token;
+          myUserId = data.id;
+          localStorage.setItem('userToken', token);
+          console.log("Registered new user:", data.username);
+          connectSocket();
+          startLocationUpdates();
+        } else {
+          console.error('register failed', data);
+        }
+      } catch (e) {
+        console.error("Register error:", e);
+      }
+    }
+
+    // start
+    registerOrLogin();
+  </script>
+</body>
+</html>

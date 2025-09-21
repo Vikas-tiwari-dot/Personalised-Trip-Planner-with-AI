@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TOURISEM APP</title>
+  <title>Pathick</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <style>
@@ -23,41 +23,36 @@
   <!-- Header -->
   <header class="bg-white shadow-md">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-blue-700">TOURISEM APP</h1>
+      <h1 class="text-2xl font-bold text-blue-700">Pathick</h1>
       <nav class="space-x-6 text-lg">
         <a href="#" class="hover:text-blue-600">Home</a>
         <a href="#destinations" class="hover:text-blue-600">Destinations</a>
         <a href="#about" class="hover:text-blue-600">About</a>
         <a href="#contact" class="hover:text-blue-600">Contact</a>
-        <button onclick="openModal('loginModal')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Login / Signup</button>
+        <button onclick="openModal('loginModal')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Signin as guide</button>
       </nav>
     </div>
   </header>
 
-  <!-- Hero Section -->
-  <!-- <section class="relative bg-cover bg-center h-[80vh] animated-water" style="background: url('travel.mp4');">
-    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div class="text-center text-white px-6">
-        <h2 class="text-4xl md:text-6xl font-bold">Discover the World with Us</h2>
-        <p class="mt-4 text-lg md:text-2xl">Mountains, Rivers, Culture & Adventure</p>
-        <button onclick="openModal('signupModal')" class="mt-6 inline-block bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold text-white">Get Started</button>
-      </div>
-    </div>
-  </section> -->
-   
-   <!-- Hero Section with Video Background -->
-<section class="relative h-[80vh] overflow-hidden">
+  <!-- Hero Section with Video Background -->
+  <section class="relative h-[80vh] overflow-hidden">
     <!-- Video Background -->
     <video autoplay muted loop playsinline class="absolute top-0 left-0 w-full h-full object-cover">
       <source src="travel.mp4" type="video/mp4">
       Your browser does not support the video tag.
     </video>
+
+    <!-- Top Left Overlay Text -->
+  <div class="absolute top-4 left-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-semibold px-4 py-2 rounded-lg max-w-xs text-sm shadow-lg">
+    Have you been here before? Share your experience and assist others by registering as a guide
+  </div>
   
-    <!-- Overlay -->
+  
+    <!-- Center Overlay -->
     <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div class="text-center text-white px-6">
         <h2 class="text-4xl md:text-6xl font-bold">Discover the World with Us</h2>
-        <p class="mt-4 text-lg md:text-2xl">Mountains, Rivers, Culture & Adventure</p>
+        <p class="mt-4 text-lg md:text-2xl">Wonder the worlds</p>
         <button onclick="openModal('signupModal')" class="mt-6 inline-block bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold text-white">Get Started</button>
       </div>
     </div>
@@ -66,7 +61,7 @@
   <!-- Features & Testimonial Section -->
   <section class="py-16 bg-white text-gray-800">
     <div class="max-w-6xl mx-auto px-6">
-      <h2 class="text-3xl font-bold text-center mb-10">Why Choose TOURISEM APP?</h2>
+      <h2 class="text-3xl font-bold text-center mb-10">We assist you as</h2>
       <div class="grid md:grid-cols-3 gap-8">
         <div class="bg-gray-100 p-6 rounded-xl shadow hover:shadow-lg transition">
           <h3 class="font-semibold text-xl mb-2">Smart Travel Alerts</h3>
@@ -190,7 +185,7 @@
   <!-- About Section -->
   <section id="about" class="bg-blue-50 py-16">
     <div class="max-w-5xl mx-auto px-6 text-center">
-      <h3 class="text-3xl font-bold mb-4">About TOURISEM APP</h3>
+      <h3 class="text-3xl font-bold mb-4">About Pathick</h3>
       <p class="text-gray-700 text-lg">We bring you curated travel experiences, adventure activities, cultural trips, and scenic locations. From majestic mountains to serene rivers, we help you explore the beauty of India and beyond.</p>
     </div>
   </section>
@@ -206,10 +201,10 @@
 
   <!-- Footer -->
   <footer class="bg-gray-900 text-white py-6 text-center">
-    <p>&copy; 2025 TOURISEM APP. All Rights Reserved.</p>
+    <p>&copy 2025 TOURISEM APP. All Rights Reserved.</p>
     <div class="mt-3 flex justify-center space-x-6">
-      <a href="https://instagram.com/hey_vt73" target="_blank" class="hover:text-pink-500">Instagram</a>
-      <a href="https://facebook.com/vikas.tiwari" target="_blank" class="hover:text-blue-400">Facebook</a>
+      <a href="https://instagram.com/Pathick" target="_blank" class="hover:text-pink-500">Instagram</a>
+      <a href="https://facebook.com/Pathick" target="_blank" class="hover:text-blue-400">Facebook</a>
     </div>
   </footer>
 
